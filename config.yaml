@@ -1,0 +1,58 @@
+# =============================================================================
+# LLM Endpoint Scanner - Configuration
+#
+# All settings have sensible defaults. Customize what you need.
+# Environment variables override values set here (see .env.example).
+# =============================================================================
+
+scan:
+  concurrency: 10            # Max parallel requests during scanning
+  timeout_seconds: 30        # Per-provider timeout
+  test_prompt: "Say 'hello' in one word."
+  max_tokens: 10
+  retry_count: 1             # Retries on transient failure
+  skip_local: false          # Skip local providers (Ollama, LM Studio, etc.)
+
+search:
+  # API keys for web search (also settable via env vars)
+  # brave_api_key: ""        # Get from https://brave.com/search/api/
+  # serper_api_key: ""       # Get from https://serper.dev
+  # google_api_key: ""       # Google Custom Search
+  # google_cse_id: ""        # Google Custom Search Engine ID
+  max_results_per_query: 10
+  search_queries:
+    - "free LLM API endpoint 2025 2026"
+    - "free text generation API no credit card"
+    - "OpenAI compatible free API endpoint"
+    - "free inference API LLM open source"
+    - "new AI API provider free tier launch"
+    - "free AI model hosting API"
+    - "serverless LLM inference free"
+
+discovery:
+  enabled: true
+  strategies:                # Which discovery strategies to use
+    - web_search             # Search the web via Brave/Serper/Google
+    - github_search          # Search GitHub repos and awesome-lists
+    - llm_search             # Ask an LLM to suggest new providers
+  # LLM to use for AI-powered discovery (must be configured in .env)
+  llm_provider: groq
+  llm_model: llama-3.3-70b-versatile
+  auto_verify: true          # Automatically scan discovered endpoints
+  save_candidates: true      # Save candidates to data/candidates.json
+
+plugins:
+  enabled_plugins:
+    - benchmark              # Latency/throughput benchmarking
+    - model_list             # Fetch model catalogs from providers
+    - export                 # Export data to JSON/CSV/YAML
+    # - pricing              # Track pricing (requires manual data)
+    # - notify               # Webhooks/Slack notifications
+  custom_plugin_dir: plugins/custom
+
+report:
+  output_file: README.md
+  include_quick_start: true
+  include_cascade_example: true
+  include_scanner_docs: true
+  github_repo_url: ""        # Set to your repo URL for links in the README
