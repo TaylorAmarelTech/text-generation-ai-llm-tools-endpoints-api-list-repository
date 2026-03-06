@@ -10,7 +10,7 @@
 
 <p align="center">
   <strong>The most comprehensive, actively-maintained directory of free and affordable LLM API endpoints.</strong><br>
-  50 providers cataloged &bull; 15 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-06 02:35 UTC
+  50 providers cataloged &bull; 15 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-06 14:43 UTC
 </p>
 
 ---
@@ -34,8 +34,9 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 |:--------|:--------|
 | **50 Providers, 7 Tiers** | From completely free to pay-per-use, plus routers and local options |
 | **OpenAI SDK Standard** | 90%+ of providers work with `from openai import OpenAI` -- just swap `base_url` |
-| **8 Ready-to-Run Examples** | Basic chat, streaming, multi-provider compare, RAG, agents, batch processing |
-| **Agent Framework** | BaseAgent, ReAct, Research, and Code agents with 8 provider presets |
+| **11 Ready-to-Run Examples** | Chat, streaming, RAG, vision, embeddings, agents, batch, research demo |
+| **Agent Framework** | 5 agents (Base, ReAct, Research, Code, Summarizer, Data Extractor) + 8 presets |
+| **API Adapters** | Unified interface for OpenAI, Anthropic, Cohere, and Google native APIs |
 | **Search Tools** | Brave, Serper, Google CSE wrappers + web scraper for agent use |
 | **AI-Powered Discovery** | Find new providers via web search, GitHub, Reddit, HN, and LLM brainstorming |
 | **Cascade Client** | Production-ready failover across providers with health tracking + cooldowns |
@@ -61,6 +62,9 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 - [Examples](#examples)
 - [Agent Framework](#agent-framework)
 - [Search Tools](#search-tools)
+- [API Adapters](#api-adapters)
+- [Utility Tools](#utility-tools)
+- [Recipes & Use Cases](#recipes--use-cases)
 - [Architecture](#architecture)
 - [Status Legend](#status-legend)
 - [Project Structure](#project-structure)
@@ -468,6 +472,9 @@ Ready-to-run scripts in the `examples/` directory:
 | **rag_pipeline** | RAG with local TF-IDF retriever + LLM | `python examples/rag_pipeline.py --query "..."` |
 | **agent_tool_use** | Interactive agent with calculator/weather/unit tools | `python examples/agent_tool_use.py` |
 | **batch_async** | Process 10 prompts in parallel with concurrency control | `python examples/batch_async.py` |
+| **vision** | Multimodal image analysis (Gemini, GitHub Models) | `python examples/vision.py --url "..."` |
+| **embeddings** | Free embeddings + similarity matrix | `python examples/embeddings.py` |
+| **research_demo** | Full research agent with web search | `python examples/research_demo.py "query"` |
 
 All examples support `--provider` flag to switch between free providers (groq, gemini, cerebras, mistral, etc.).
 
@@ -527,6 +534,34 @@ review = agent.review("def foo(x): return x+1")
 fix = agent.debug("def foo(): return 1/0", "ZeroDivisionError")
 ```
 
+### SummarizerAgent
+
+Handles long documents with automatic chunking and hierarchical summarization:
+
+```python
+from agents import SummarizerAgent
+
+agent = SummarizerAgent("groq")
+summary = agent.summarize(long_document)
+bullets = agent.summarize(long_document, style="bullets")
+brief = agent.summarize(long_document, style="tldr")
+diff = agent.compare(text_a, text_b)
+```
+
+### DataExtractorAgent
+
+Extract structured data from unstructured text:
+
+```python
+from agents import DataExtractorAgent
+
+agent = DataExtractorAgent("groq")
+entities = agent.extract_entities("Elon Musk visited SpaceX in Texas.")
+data = agent.extract(text, {"product": "string", "price": "number"})
+table = agent.extract_table(report, columns=["quarter", "revenue"])
+category = agent.classify(text, ["positive", "negative", "neutral"])
+```
+
 ### Provider Presets
 
 All agents accept a provider name string with 8 built-in presets:
@@ -577,6 +612,105 @@ text = asyncio.run(fetch_url("https://example.com"))
 ```
 
 All search providers implement the same `BaseSearchProvider` interface, making them interchangeable in agents and discovery strategies.
+
+---
+
+## API Adapters
+
+The `adapters/` module normalizes different LLM API formats into a unified interface. Write your code once, use any provider:
+
+| Adapter | Providers | Auth Style | Notes |
+|:--------|:----------|:-----------|:------|
+| **OpenAIAdapter** | OpenAI, Groq, Cerebras, Mistral, Together, DeepSeek, 30+ more | Bearer token | Most common format |
+| **AnthropicAdapter** | Anthropic (Claude) | x-api-key header | System prompt as top-level param |
+| **CohereAdapter** | Cohere (Command-R) | Bearer token | Custom chat format |
+| **GoogleNativeAdapter** | Google Gemini (native) | Query param | GenerateContent API |
+
+### Usage
+
+```python
+from adapters import get_adapter, ChatMessage
+
+# Unified interface across all providers
+adapter = get_adapter("openai", base_url="https://api.groq.com/openai/v1",
+                       api_key="...", model="llama-3.3-70b-versatile")
+response = adapter.chat([
+    ChatMessage("system", "You are helpful."),
+    ChatMessage("user", "Hello!"),
+])
+print(response.content)  # Same ChatResponse regardless of provider
+
+# Quick one-liner
+text = adapter.simple_chat("Explain quantum computing")
+
+# Async support
+import asyncio
+response = asyncio.run(adapter.achat([ChatMessage("user", "Hi!")]))
+```
+
+---
+
+## Utility Tools
+
+### Rate Limiter
+
+Thread-safe rate limiting with per-provider quota tracking:
+
+```python
+from tools.rate_limiter import RateLimiter
+
+limiter = RateLimiter()  # Pre-configured quotas for 8 free providers
+
+if limiter.can_request("groq"):
+    # Make your request...
+    limiter.record_request("groq", tokens=150, latency_ms=230)
+else:
+    wait = limiter.wait_time("groq")
+    print(f"Rate limited. Wait {wait:.1f}s")
+
+# Check remaining quota
+print(limiter.remaining("groq"))  # {"rpm": 29, "rpd": 999}
+print(limiter.summary())          # Full usage summary table
+```
+
+### Conversation Manager
+
+Save, load, and export chat histories:
+
+```python
+from tools.conversation import ConversationManager
+
+manager = ConversationManager("data/conversations")
+conv = manager.new("Debug Session", provider="groq")
+conv.add_message("user", "Fix this bug...")
+conv.add_message("assistant", "The issue is...")
+
+manager.save(conv)                # Save as JSON
+manager.save(conv, format="md")   # Also save as Markdown
+convs = manager.list_conversations()  # List all saved
+loaded = manager.load(conv.id)    # Load by ID
+```
+
+---
+
+## Recipes & Use Cases
+
+The `recipes/` directory contains step-by-step guides for common tasks:
+
+| Recipe | Use Case | Difficulty |
+|:-------|:---------|:-----------|
+| Chatbot | Build a conversational bot with memory | Beginner |
+| RAG System | Answer questions from your documents | Intermediate |
+| Content Pipeline | Generate, review, and refine content with multiple models | Intermediate |
+| Data Extraction | Pull structured data from unstructured text | Beginner |
+| Code Assistant | Generate, review, debug, and explain code | Beginner |
+| Research Agent | Search the web and synthesize answers | Intermediate |
+| Multi-Provider Failover | Never go down with cascade fallback | Intermediate |
+| Batch Processing | Process hundreds of prompts efficiently | Intermediate |
+| Cost Optimization | Smart routing to minimize API costs | Advanced |
+| Monitoring Dashboard | Track usage, latency, and errors across providers | Advanced |
+
+See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code examples.
 
 ---
 
@@ -657,7 +791,7 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # API key template (50+ keys, all optional)
 │
-├── examples/                # Ready-to-run sample scripts
+├── examples/                # Ready-to-run sample scripts (11 examples)
 │   ├── basic_chat.py        # Simple single-turn chat
 │   ├── streaming_chat.py    # Streaming with perf stats
 │   ├── interactive_chat.py  # Multi-turn conversation
@@ -665,13 +799,25 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 │   ├── structured_output.py # JSON mode + function calling
 │   ├── rag_pipeline.py      # RAG with local TF-IDF + LLM
 │   ├── agent_tool_use.py    # Agent with calculator/weather tools
-│   └── batch_async.py       # Parallel prompt processing
+│   ├── batch_async.py       # Parallel prompt processing
+│   ├── vision.py            # Multimodal image analysis
+│   ├── embeddings.py        # Free embeddings + similarity
+│   └── research_demo.py     # Full research agent demo
 │
 ├── agents/                  # LLM-powered agent framework
-│   ├── base.py              # BaseAgent + provider presets
+│   ├── base.py              # BaseAgent + 8 provider presets
 │   ├── react_agent.py       # ReAct (Reason + Act) agent
 │   ├── research_agent.py    # Web research agent
-│   └── code_agent.py        # Code gen/review/debug agent
+│   ├── code_agent.py        # Code gen/review/debug agent
+│   ├── summarizer.py        # Document summarization agent
+│   └── data_extractor.py    # Structured data extraction
+│
+├── adapters/                # API format normalizers
+│   ├── base.py              # ChatMessage/ChatResponse interface
+│   ├── openai_adapter.py    # OpenAI-compatible (30+ providers)
+│   ├── anthropic_adapter.py # Anthropic Messages API
+│   ├── cohere_adapter.py    # Cohere Chat API
+│   └── google_adapter.py    # Google Gemini native API
 │
 ├── search/                  # Search tool integrations
 │   ├── base.py              # BaseSearchProvider interface
@@ -679,6 +825,9 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 │   ├── serper_search.py     # Serper.dev Google Search
 │   ├── google_cse.py        # Google Custom Search Engine
 │   └── web_scraper.py       # URL content fetcher
+│
+├── recipes/                 # Use case guides & walkthroughs
+│   └── README.md            # 10 recipes with code examples
 │
 ├── discovery/               # AI-powered endpoint discovery
 │   ├── engine.py            # Orchestrator (dedup, verify, save)
@@ -703,7 +852,9 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 ├── tools/                   # Standalone tools
 │   ├── cascade.py           # Production cascade client
 │   ├── compare.py           # Side-by-side comparison
-│   └── proxy.py             # Local OpenAI-compatible proxy
+│   ├── proxy.py             # Local OpenAI-compatible proxy
+│   ├── rate_limiter.py      # Per-provider rate limiting + quota tracking
+│   └── conversation.py      # Chat history save/load/export
 │
 └── data/                    # Generated data (gitignored)
     └── .gitkeep
@@ -742,5 +893,5 @@ Found a new free LLM endpoint? Provider changed their limits? Something broken? 
 ---
 
 <p align="center">
-  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-06 02:35 UTC</sub>
+  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-06 14:43 UTC</sub>
 </p>
