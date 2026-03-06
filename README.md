@@ -10,7 +10,7 @@
 
 <p align="center">
   <strong>The most comprehensive, actively-maintained directory of free and affordable LLM API endpoints.</strong><br>
-  50 providers cataloged &bull; 15 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-06 01:05 UTC
+  50 providers cataloged &bull; 15 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-06 02:35 UTC
 </p>
 
 ---
@@ -34,8 +34,10 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 |:--------|:--------|
 | **50 Providers, 7 Tiers** | From completely free to pay-per-use, plus routers and local options |
 | **OpenAI SDK Standard** | 90%+ of providers work with `from openai import OpenAI` -- just swap `base_url` |
-| **Async Health Scanner** | Test all endpoints in parallel, get latency + status in seconds |
-| **AI-Powered Discovery** | Find new providers via Brave, Serper, Google, GitHub, Reddit, HN, and LLM brainstorming |
+| **8 Ready-to-Run Examples** | Basic chat, streaming, multi-provider compare, RAG, agents, batch processing |
+| **Agent Framework** | BaseAgent, ReAct, Research, and Code agents with 8 provider presets |
+| **Search Tools** | Brave, Serper, Google CSE wrappers + web scraper for agent use |
+| **AI-Powered Discovery** | Find new providers via web search, GitHub, Reddit, HN, and LLM brainstorming |
 | **Cascade Client** | Production-ready failover across providers with health tracking + cooldowns |
 | **Local Proxy Server** | Route any OpenAI-compatible app through free providers at `localhost:8000/v1` |
 | **Plugin Architecture** | Benchmarks, model catalogs, pricing, export (JSON/CSV/YAML/HTML), notifications |
@@ -56,6 +58,9 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 - [Local / Self-hosted](#local--self-hosted-unlimited-free-forever)
 - [Cascade / Fallback Example](#cascade--fallback-example)
 - [Toolkit](#toolkit)
+- [Examples](#examples)
+- [Agent Framework](#agent-framework)
+- [Search Tools](#search-tools)
 - [Architecture](#architecture)
 - [Status Legend](#status-legend)
 - [Project Structure](#project-structure)
@@ -449,6 +454,132 @@ export OPENAI_API_KEY=anything
 
 ---
 
+## Examples
+
+Ready-to-run scripts in the `examples/` directory:
+
+| Example | Description | Run |
+|:--------|:------------|:----|
+| **basic_chat** | Simple single-turn chat | `python examples/basic_chat.py --provider groq` |
+| **streaming_chat** | Streaming with TTFT/throughput stats | `python examples/streaming_chat.py` |
+| **interactive_chat** | Multi-turn conversation with history | `python examples/interactive_chat.py` |
+| **multi_provider** | Compare responses across providers in parallel | `python examples/multi_provider.py "your prompt"` |
+| **structured_output** | JSON mode + function calling for extraction | `python examples/structured_output.py` |
+| **rag_pipeline** | RAG with local TF-IDF retriever + LLM | `python examples/rag_pipeline.py --query "..."` |
+| **agent_tool_use** | Interactive agent with calculator/weather/unit tools | `python examples/agent_tool_use.py` |
+| **batch_async** | Process 10 prompts in parallel with concurrency control | `python examples/batch_async.py` |
+
+All examples support `--provider` flag to switch between free providers (groq, gemini, cerebras, mistral, etc.).
+
+---
+
+## Agent Framework
+
+The `agents/` module provides a lightweight agent framework that works with any free provider:
+
+### BaseAgent
+
+Core agent with tool registration, conversation history, and automatic function calling:
+
+```python
+from agents import BaseAgent
+
+agent = BaseAgent("groq")  # or "gemini", "cerebras", "mistral", etc.
+agent.register_tool("my_tool", "description", {params}, my_function)
+response = agent.chat("Use my_tool to do something")
+```
+
+### ReActAgent
+
+Reason + Act pattern using text parsing (works with ANY provider, even without native tool support):
+
+```python
+from agents import ReActAgent
+
+agent = ReActAgent("gemini", verbose=True)
+agent.register_tool("search", "Search the web", {...}, search_fn)
+answer = agent.chat("Research the latest AI news")
+# Prints: [Thought] -> [Action] -> [Observation] -> ... -> [Answer]
+```
+
+### ResearchAgent
+
+Web research agent with built-in search and page fetching:
+
+```python
+from agents import ResearchAgent
+from search import get_available_search
+
+agent = ResearchAgent("groq", search_provider=get_available_search())
+answer = agent.chat("What are the latest developments in fusion energy?")
+```
+
+### CodeAgent
+
+Code generation, review, debugging, and explanation:
+
+```python
+from agents import CodeAgent
+
+agent = CodeAgent("groq", language="python")
+code = agent.generate("a binary search function")
+review = agent.review("def foo(x): return x+1")
+fix = agent.debug("def foo(): return 1/0", "ZeroDivisionError")
+```
+
+### Provider Presets
+
+All agents accept a provider name string with 8 built-in presets:
+
+| Preset | Provider | Model | Free Tier |
+|:-------|:---------|:------|:----------|
+| `groq` | Groq | llama-3.3-70b-versatile | ~1K RPD |
+| `gemini` | Google Gemini | gemini-2.0-flash | 250 RPD |
+| `cerebras` | Cerebras | llama-3.3-70b | 1M tokens/day |
+| `mistral` | Mistral | mistral-small-latest | 1B tokens/mo |
+| `openrouter` | OpenRouter | deepseek-r1:free | 50 RPD |
+| `github` | GitHub Models | gpt-4o | 50-150 RPD |
+| `sambanova` | SambaNova | Llama-3.3-70B | $5 credits |
+| `huggingface` | HuggingFace | Qwen2.5-72B | ~300 req/hr |
+
+---
+
+## Search Tools
+
+The `search/` module provides unified search provider wrappers for use with agents and discovery:
+
+| Provider | API | Free Tier | Setup |
+|:---------|:----|:----------|:------|
+| **Brave Search** | `search/brave_search.py` | 2,000 queries/month | `BRAVE_API_KEY` from [brave.com/search/api](https://brave.com/search/api/) |
+| **Serper.dev** | `search/serper_search.py` | 2,500 queries (one-time) | `SERPER_API_KEY` from [serper.dev](https://serper.dev) |
+| **Google CSE** | `search/google_cse.py` | 100 queries/day | `GOOGLE_API_KEY` + `GOOGLE_CSE_ID` |
+| **Web Scraper** | `search/web_scraper.py` | Unlimited (direct fetch) | No key needed |
+
+### Usage
+
+```python
+from search import get_available_search, BraveSearch, fetch_url
+
+# Auto-detect first configured provider
+search = get_available_search()
+if search:
+    import asyncio
+    results = asyncio.run(search.search("free LLM API endpoints"))
+    for r in results:
+        print(f"{r.title}: {r.url}")
+
+# Or use a specific provider
+brave = BraveSearch()  # Uses BRAVE_API_KEY from env
+results = asyncio.run(brave.search("best free AI APIs 2026"))
+
+# Fetch and extract text from any URL
+text = asyncio.run(fetch_url("https://example.com"))
+```
+
+All search providers implement the same `BaseSearchProvider` interface, making them interchangeable in agents and discovery strategies.
+
+---
+
 ## Architecture
 
 ```
@@ -468,19 +599,31 @@ export OPENAI_API_KEY=anything
     │  providers.py    │ │  scanner.py  │  │ discovery/engine  │
     │  50+ providers   │ │  async HTTP  │  │  5 strategies     │
     │  7 tiers         │ │  health test │  │  AI-powered       │
-    └────────┬─────────┘ └──────┬───────┘  └──────────────────┘
-             │                  │
-             ▼                  ▼
-    ┌──────────────────────────────────────┐
-    │         report_generator.py          │
-    │         (generates README.md)        │
-    └──────────────────────────────────────┘
+    └────────┬─────────┘ └──────┬───────┘  └────────┬─────────┘
+             │                  │                    │
+             ▼                  ▼                    ▼
+    ┌──────────────────────────────────────────────────────┐
+    │              report_generator.py                     │
+    │              (generates README.md)                   │
+    └──────────────────────────────────────────────────────┘
 
-    ┌──────────────────────────────────────┐
-    │          plugins/ + tools/           │
-    │  benchmark | export | cascade |      │
-    │  pricing | notify | proxy | compare  │
-    └──────────────────────────────────────┘
+    ┌──────────────────────────────────────────────────────┐
+    │                agents/ + search/                     │
+    │  BaseAgent | ReActAgent | ResearchAgent | CodeAgent  │
+    │  BraveSearch | SerperSearch | GoogleCSE | WebScraper │
+    └──────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────┐
+    │              plugins/ + tools/                       │
+    │  benchmark | export | cascade | proxy | compare      │
+    │  pricing | notify | model_list                       │
+    └──────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────┐
+    │                   examples/                          │
+    │  basic_chat | streaming | multi_provider | RAG       │
+    │  agent_tool_use | batch_async | structured_output    │
+    └──────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -513,6 +656,29 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 ├── report_generator.py      # README/report generator
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # API key template (50+ keys, all optional)
+│
+├── examples/                # Ready-to-run sample scripts
+│   ├── basic_chat.py        # Simple single-turn chat
+│   ├── streaming_chat.py    # Streaming with perf stats
+│   ├── interactive_chat.py  # Multi-turn conversation
+│   ├── multi_provider.py    # Compare providers side-by-side
+│   ├── structured_output.py # JSON mode + function calling
+│   ├── rag_pipeline.py      # RAG with local TF-IDF + LLM
+│   ├── agent_tool_use.py    # Agent with calculator/weather tools
+│   └── batch_async.py       # Parallel prompt processing
+│
+├── agents/                  # LLM-powered agent framework
+│   ├── base.py              # BaseAgent + provider presets
+│   ├── react_agent.py       # ReAct (Reason + Act) agent
+│   ├── research_agent.py    # Web research agent
+│   └── code_agent.py        # Code gen/review/debug agent
+│
+├── search/                  # Search tool integrations
+│   ├── base.py              # BaseSearchProvider interface
+│   ├── brave_search.py      # Brave Search API
+│   ├── serper_search.py     # Serper.dev Google Search
+│   ├── google_cse.py        # Google Custom Search Engine
+│   └── web_scraper.py       # URL content fetcher
 │
 ├── discovery/               # AI-powered endpoint discovery
 │   ├── engine.py            # Orchestrator (dedup, verify, save)
@@ -576,5 +742,5 @@ Found a new free LLM endpoint? Provider changed their limits? Something broken? 
 ---
 
 <p align="center">
-  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-06 01:05 UTC</sub>
+  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-06 02:35 UTC</sub>
 </p>
