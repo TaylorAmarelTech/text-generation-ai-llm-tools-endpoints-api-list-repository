@@ -117,7 +117,7 @@ from openai import OpenAI
 client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key="YOUR_GROQ_KEY")
 model = "llama-3.3-70b-versatile"
 
-# Google Gemini (250 RPD Flash)
+# Google Gemini (500 RPD Flash)
 # client = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key="YOUR_GEMINI_KEY")
 # model = "gemini-2.0-flash"
 
@@ -129,7 +129,7 @@ model = "llama-3.3-70b-versatile"
 # client = OpenAI(base_url="https://api.mistral.ai/v1", api_key="YOUR_MISTRAL_KEY")
 # model = "mistral-small-latest"
 
-# OpenRouter (25+ free models, 50 RPD)
+# OpenRouter (28+ free models, 200 RPD)
 # client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key="YOUR_OPENROUTER_KEY")
 # model = "deepseek/deepseek-r1:free"
 
@@ -261,12 +261,14 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 |:--------|:--------|
 | **{total} Providers, 7 Tiers** | From completely free to pay-per-use, plus routers and local options |
 | **OpenAI SDK Standard** | 90%+ of providers work with `from openai import OpenAI` -- just swap `base_url` |
-| **11 Ready-to-Run Examples** | Chat, streaming, RAG, vision, embeddings, agents, batch, research demo |
+| **13 Ready-to-Run Examples** | Chat, streaming, RAG, vision, embeddings, agents, batch, research, cURL, one-liners |
 | **Agent Framework** | 5 agents (Base, ReAct, Research, Code, Summarizer, Data Extractor) + 8 presets |
 | **API Adapters** | Unified interface for OpenAI, Anthropic, Cohere, and Google native APIs |
 | **Search Tools** | Brave, Serper, Google CSE wrappers + web scraper for agent use |
 | **AI-Powered Discovery** | Find new providers via web search, GitHub, Reddit, HN, and LLM brainstorming |
 | **Cascade Client** | Production-ready failover across providers with health tracking + cooldowns |
+| **Cost Calculator** | Compare pricing across providers, estimate monthly costs, find cheapest option |
+| **Token Counter** | Estimate token counts and costs without external dependencies |
 | **Local Proxy Server** | Route any OpenAI-compatible app through free providers at `localhost:8000/v1` |
 | **Plugin Architecture** | Benchmarks, model catalogs, pricing, export (JSON/CSV/YAML/HTML), notifications |
 | **Fully Configurable** | YAML config + env vars. Set your keys, pick your strategies, run |
@@ -314,6 +316,21 @@ All Tier 1 providers use the **OpenAI SDK format** -- just change the `base_url`
 {_quick_start_snippet()}
 
 > **Tip:** Don't want to pick just one? Use the [Cascade Client](#cascade--fallback-example) to automatically try multiple providers with failover.
+
+<details>
+<summary><strong>cURL (no Python needed)</strong></summary>
+
+```bash
+curl https://api.groq.com/openai/v1/chat/completions \\
+  -H "Authorization: Bearer $GROQ_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{{"model": "llama-3.3-70b-versatile", "messages": [{{"role": "user", "content": "Hello!"}}], "max_tokens": 200}}'
+```
+
+Same format works for Gemini, Cerebras, Mistral, OpenRouter -- just swap the URL and key.
+See `examples/curl_examples.sh` for all 10 providers.
+
+</details>
 
 ---""")
 
@@ -512,6 +529,8 @@ Ready-to-run scripts in the `examples/` directory:
 | **vision** | Multimodal image analysis (Gemini, GitHub Models) | `python examples/vision.py --url "..."` |
 | **embeddings** | Free embeddings + similarity matrix | `python examples/embeddings.py` |
 | **research_demo** | Full research agent with web search | `python examples/research_demo.py "query"` |
+| **oneliners** | One-liner for every provider + quick list | `python examples/oneliners.py groq` |
+| **curl_examples** | cURL commands for 10 providers (no Python!) | `bash examples/curl_examples.sh groq` |
 
 All examples support `--provider` flag to switch between free providers (groq, gemini, cerebras, mistral, etc.).
 
@@ -610,10 +629,10 @@ All agents accept a provider name string with 8 built-in presets:
 | Preset | Provider | Model | Free Tier |
 |:-------|:---------|:------|:----------|
 | `groq` | Groq | llama-3.3-70b-versatile | ~1K RPD |
-| `gemini` | Google Gemini | gemini-2.0-flash | 250 RPD |
+| `gemini` | Google Gemini | gemini-2.0-flash | 500 RPD |
 | `cerebras` | Cerebras | llama-3.3-70b | 1M tokens/day |
 | `mistral` | Mistral | mistral-small-latest | 1B tokens/mo |
-| `openrouter` | OpenRouter | deepseek-r1:free | 50 RPD |
+| `openrouter` | OpenRouter | deepseek-r1:free | 200 RPD |
 | `github` | GitHub Models | gpt-4o | 50-150 RPD |
 | `sambanova` | SambaNova | Llama-3.3-70B | $5 credits |
 | `huggingface` | HuggingFace | Qwen2.5-72B | ~300 req/hr |
@@ -726,6 +745,50 @@ print(limiter.remaining("groq"))  # {"rpm": 29, "rpd": 999}
 print(limiter.summary())          # Full usage summary table
 ```
 
+### Token Counter
+
+Estimate token counts without external dependencies:
+
+```python
+from tools.token_counter import count_tokens, estimate_messages_tokens, tokens_to_cost
+
+# Quick estimate
+tokens = count_tokens("Hello, how are you doing today?")  # ~8
+
+# Estimate for chat messages
+messages = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Explain quantum computing."},
+]
+total = estimate_messages_tokens(messages)  # ~18
+
+# Calculate cost
+cost = tokens_to_cost(input_tokens=1000, output_tokens=500,
+                       input_price_per_m=0.14, output_price_per_m=0.28)
+# $0.00028 (DeepSeek pricing)
+```
+
+### Cost Calculator
+
+Compare pricing across all providers:
+
+```python
+from tools.cost_calculator import CostCalculator, estimate_monthly_cost
+
+calc = CostCalculator()
+
+# Find cheapest provider
+cheapest = calc.cheapest_paid(input_tokens=1000, output_tokens=500)
+# {'provider': 'DeepSeek', 'model': 'deepseek-chat', 'cost': 0.00028, ...}
+
+# Full cost comparison table
+print(calc.summary(input_tokens=1000, output_tokens=500))
+
+# Estimate monthly spend
+monthly = estimate_monthly_cost("deepseek", requests_per_day=100)
+# {'monthly_cost': 0.84, 'monthly_requests': 3000, ...}
+```
+
 ### Conversation Manager
 
 Save, load, and export chat histories:
@@ -792,7 +855,7 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
               ▼                   ▼                   ▼
     ┌──────────────────┐ ┌──────────────┐  ┌──────────────────┐
     │  providers.py    │ │  scanner.py  │  │ discovery/engine  │
-    │  50+ providers   │ │  async HTTP  │  │  5 strategies     │
+    │  57+ providers   │ │  async HTTP  │  │  5 strategies     │
     │  7 tiers         │ │  health test │  │  AI-powered       │
     └────────┬─────────┘ └──────┬───────┘  └────────┬─────────┘
              │                  │                    │
@@ -860,7 +923,7 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # API key template (50+ keys, all optional)
 │
-├── examples/                # Ready-to-run sample scripts (11 examples)
+├── examples/                # Ready-to-run sample scripts (13 examples)
 │   ├── basic_chat.py        # Simple single-turn chat
 │   ├── streaming_chat.py    # Streaming with perf stats
 │   ├── interactive_chat.py  # Multi-turn conversation
@@ -871,7 +934,9 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
 │   ├── batch_async.py       # Parallel prompt processing
 │   ├── vision.py            # Multimodal image analysis
 │   ├── embeddings.py        # Free embeddings + similarity
-│   └── research_demo.py     # Full research agent demo
+│   ├── research_demo.py     # Full research agent demo
+│   ├── oneliners.py         # One-liner per provider
+│   └── curl_examples.sh     # cURL commands for 10 providers
 │
 ├── agents/                  # LLM-powered agent framework
 │   ├── base.py              # BaseAgent + 8 provider presets
@@ -923,7 +988,9 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
 │   ├── compare.py           # Side-by-side comparison
 │   ├── proxy.py             # Local OpenAI-compatible proxy
 │   ├── rate_limiter.py      # Per-provider rate limiting + quota tracking
-│   └── conversation.py      # Chat history save/load/export
+│   ├── conversation.py      # Chat history save/load/export
+│   ├── token_counter.py     # Token estimation + cost math
+│   └── cost_calculator.py   # Cross-provider cost comparison
 │
 └── data/                    # Generated data (gitignored)
     └── .gitkeep

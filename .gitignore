@@ -13,3 +13,4 @@ data/*.html
 .ruff_cache/
 dist/
 *.egg-info/
+debug.log

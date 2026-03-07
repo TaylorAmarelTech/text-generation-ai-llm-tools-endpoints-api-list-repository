@@ -3,14 +3,14 @@
 <p align="center">
   <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/providers-50-brightgreen.svg" alt="Providers: 50">
-  <img src="https://img.shields.io/badge/free%20tier-15-success.svg" alt="Free: 15">
+  <img src="https://img.shields.io/badge/providers-58-brightgreen.svg" alt="Providers: 58">
+  <img src="https://img.shields.io/badge/free%20tier-18-success.svg" alt="Free: 18">
   <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository/stargazers"><img src="https://img.shields.io/github/stars/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository?style=social" alt="GitHub Stars"></a>
 </p>
 
 <p align="center">
   <strong>The most comprehensive, actively-maintained directory of free and affordable LLM API endpoints.</strong><br>
-  50 providers cataloged &bull; 15 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-06 14:43 UTC
+  58 providers cataloged &bull; 18 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-06 15:52 UTC
 </p>
 
 ---
@@ -32,14 +32,16 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 
 | Feature | Details |
 |:--------|:--------|
-| **50 Providers, 7 Tiers** | From completely free to pay-per-use, plus routers and local options |
+| **58 Providers, 7 Tiers** | From completely free to pay-per-use, plus routers and local options |
 | **OpenAI SDK Standard** | 90%+ of providers work with `from openai import OpenAI` -- just swap `base_url` |
-| **11 Ready-to-Run Examples** | Chat, streaming, RAG, vision, embeddings, agents, batch, research demo |
+| **13 Ready-to-Run Examples** | Chat, streaming, RAG, vision, embeddings, agents, batch, research, cURL, one-liners |
 | **Agent Framework** | 5 agents (Base, ReAct, Research, Code, Summarizer, Data Extractor) + 8 presets |
 | **API Adapters** | Unified interface for OpenAI, Anthropic, Cohere, and Google native APIs |
 | **Search Tools** | Brave, Serper, Google CSE wrappers + web scraper for agent use |
 | **AI-Powered Discovery** | Find new providers via web search, GitHub, Reddit, HN, and LLM brainstorming |
 | **Cascade Client** | Production-ready failover across providers with health tracking + cooldowns |
+| **Cost Calculator** | Compare pricing across providers, estimate monthly costs, find cheapest option |
+| **Token Counter** | Estimate token counts and costs without external dependencies |
 | **Local Proxy Server** | Route any OpenAI-compatible app through free providers at `localhost:8000/v1` |
 | **Plugin Architecture** | Benchmarks, model catalogs, pricing, export (JSON/CSV/YAML/HTML), notifications |
 | **Fully Configurable** | YAML config + env vars. Set your keys, pick your strategies, run |
@@ -86,7 +88,7 @@ from openai import OpenAI
 client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key="YOUR_GROQ_KEY")
 model = "llama-3.3-70b-versatile"
 
-# Google Gemini (250 RPD Flash)
+# Google Gemini (500 RPD Flash)
 # client = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key="YOUR_GEMINI_KEY")
 # model = "gemini-2.0-flash"
 
@@ -98,7 +100,7 @@ model = "llama-3.3-70b-versatile"
 # client = OpenAI(base_url="https://api.mistral.ai/v1", api_key="YOUR_MISTRAL_KEY")
 # model = "mistral-small-latest"
 
-# OpenRouter (25+ free models, 50 RPD)
+# OpenRouter (28+ free models, 200 RPD)
 # client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key="YOUR_OPENROUTER_KEY")
 # model = "deepseek/deepseek-r1:free"
 
@@ -112,15 +114,30 @@ print(response.choices[0].message.content)
 
 > **Tip:** Don't want to pick just one? Use the [Cascade Client](#cascade--fallback-example) to automatically try multiple providers with failover.
 
+<details>
+<summary><strong>cURL (no Python needed)</strong></summary>
+
+```bash
+curl https://api.groq.com/openai/v1/chat/completions \
+  -H "Authorization: Bearer $GROQ_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": "Hello!"}], "max_tokens": 200}'
+```
+
+Same format works for Gemini, Cerebras, Mistral, OpenRouter -- just swap the URL and key.
+See `examples/curl_examples.sh` for all 10 providers.
+
+</details>
+
 ---
 
 ## Provider Overview
 
 | Tier | Providers | Credit Card | Best For |
 |:-----|:----------|:------------|:---------|
-| Truly Free | 15 | No | Getting started, prototyping, hobby projects |
-| Generous Free Tier | 5 | No | Moderate usage with rate limits |
-| Free Credits | 17 | No* | Trying premium models, short-term projects |
+| Truly Free | 18 | No | Getting started, prototyping, hobby projects |
+| Generous Free Tier | 7 | No | Moderate usage with rate limits |
+| Free Credits | 20 | No* | Trying premium models, short-term projects |
 | Freemium | 3 | Yes | Production apps, frontier models (GPT-4o, Claude) |
 | Pay-per-use | 2 | Yes | Budget-conscious production, Chinese models |
 | Routers / Aggregators | 4 | Varies | Multi-provider failover, observability |
@@ -134,11 +151,11 @@ print(response.choices[0].message.content)
 
 | # | Provider | Endpoint | Free Tier | Top Models | SDK | Status |
 |:--|:---------|:---------|:----------|:-----------|:----|:-------|
-| 1 | [**Google Gemini**](https://aistudio.google.com) | `generativelanguage.googleapis.com/v1beta/openai/` | 250 RPD Flash, 100 RPD Pro | gemini-2.5-flash, gemini-2.5-pro | ✅ | ❓ Not Tested |
+| 1 | [**Google Gemini**](https://aistudio.google.com) | `generativelanguage.googleapis.com/v1beta/openai/` | 500 RPD Flash, 100 RPD Pro | gemini-2.5-flash, gemini-2.5-pro | ✅ | ❓ Not Tested |
 | 2 | [**Groq**](https://console.groq.com) | `api.groq.com/openai/v1` | ~1K RPD 70B, 14K RPD 8B | llama-3.3-70b-versatile, llama-3.1-8b-instant | ✅ | ❓ Not Tested |
 | 3 | [**Mistral**](https://console.mistral.ai) | `api.mistral.ai/v1` | 1B tokens/mo per model | mistral-large-latest, mistral-small-latest | ✅ | ❓ Not Tested |
 | 4 | [**Cerebras**](https://cloud.cerebras.ai) | `api.cerebras.ai/v1` | 1M tokens/day, 8K context | llama-3.3-70b, llama-3.1-8b | ✅ | ❓ Not Tested |
-| 5 | [**OpenRouter**](https://openrouter.ai) | `openrouter.ai/api/v1` | 25+ free models, 50 RPD each | deepseek/deepseek-r1:free, meta-llama/llama-3.3-70b-instruct:free | ✅ | ❓ Not Tested |
+| 5 | [**OpenRouter**](https://openrouter.ai) | `openrouter.ai/api/v1` | 28+ free models, 20 RPM / 200 RPD | deepseek/deepseek-r1:free, qwen/qwen3-coder-480b-a35b:free | ✅ | ❓ Not Tested |
 | 6 | [**Cloudflare Workers AI**](https://dash.cloudflare.com) | `api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1` | 10K neurons/day | @cf/meta/llama-3.3-70b-instruct-fp8-fast, @cf/qwen/qwen2.5-coder-32b-instruct | ✅ | ❓ Not Tested |
 | 7 | [**GitHub Models**](https://github.com/marketplace/models) | `models.inference.ai.azure.com` | 50-150 RPD, 8K token limit | gpt-4o, Meta-Llama-3.1-70B-Instruct | ✅ | ❓ Not Tested |
 | 8 | [**Zhipu (GLM)**](https://open.bigmodel.cn) | `open.bigmodel.cn/api/paas/v4` | GLM-4-Flash unlimited, no quota | glm-4-flash, glm-4-plus | ✅ | ❓ Not Tested |
@@ -149,15 +166,18 @@ print(response.choices[0].message.content)
 | 13 | [**Glhf.chat**](https://glhf.chat) | `glhf.chat/api/openai/v1` | Free tier, 30 RPM | hf:meta-llama/Llama-3.3-70B-Instruct, hf:Qwen/Qwen2.5-72B-Instruct | ✅ | ❓ Not Tested |
 | 14 | [**Chutes.ai**](https://chutes.ai) | `api.chutes.ai/v1` | ~200 RPD | deepseek-ai/DeepSeek-R1, meta-llama/Llama-3.3-70B-Instruct | ✅ | ❓ Not Tested |
 | 15 | [**Venice.ai**](https://venice.ai) | `api.venice.ai/api/v1` | 10 prompts/day free | llama-3.3-70b, qwen-2.5-72b | ✅ | ❓ Not Tested |
+| 16 | [**Puter.js**](https://puter.com) | `api.puter.com/ai/chat` | Unlimited (no API key needed) | gpt-4o-mini, claude-3.5-sonnet | ❌ | ❓ Not Tested |
+| 17 | [**Reka AI**](https://platform.reka.ai) | `api.reka.ai/v1` | $10/mo free credits | reka-flash, reka-core | ✅ | ❓ Not Tested |
+| 18 | [**Arcee AI**](https://arcee.ai) | `conductor.arcee.ai/v1` | Free via OpenRouter | arcee-ai/trinity-large-preview, arcee-ai/caller-large | ✅ | ❓ Not Tested |
 
 <details>
-<summary><strong>Provider Notes (15)</strong></summary>
+<summary><strong>Provider Notes (18)</strong></summary>
 
-- **Google Gemini**: Free tier is very generous. Supports OpenAI SDK via compatibility layer.
+- **Google Gemini**: Free tier is very generous (500 RPD for Flash). Supports OpenAI SDK via compatibility layer.
 - **Groq**: Fastest inference. Custom LPU hardware.
 - **Mistral**: French AI lab. Excellent multilingual support.
 - **Cerebras**: Wafer-scale inference. Extremely fast.
-- **OpenRouter**: Aggregator with 25+ permanently free model variants.
+- **OpenRouter**: Aggregator with 28+ permanently free models incl. Qwen3 Coder 480B, Trinity-Large-Preview, StepFun Step 3.5 Flash.
 - **Cloudflare Workers AI**: Requires CLOUDFLARE_ACCOUNT_ID env var too. Edge inference.
 - **GitHub Models**: Uses your GitHub PAT. Great for prototyping.
 - **Zhipu (GLM)**: Chinese AI lab. GLM-4-Flash is completely free with no rate limits.
@@ -168,6 +188,9 @@ print(response.choices[0].message.content)
 - **Glhf.chat**: Run any HuggingFace model via vLLM. Prefix model IDs with 'hf:'.
 - **Chutes.ai**: Decentralized GPU network. Free tier available.
 - **Venice.ai**: Privacy-focused. Uncensored models. May need credits for API.
+- **Puter.js**: Free unlimited access to GPT-4o-mini, Claude 3.5, Gemini via puter.js SDK. Web/Node.js only.
+- **Reka AI**: Multimodal AI. OpenAI-compatible. $10/mo free credits renewable.
+- **Arcee AI**: Trinity-Large-Preview is free on OpenRouter. Specializes in enterprise AI.
 
 </details>
 
@@ -182,15 +205,19 @@ print(response.choices[0].message.content)
 | 3 | [**Inference.net**](https://inference.net) | `api.inference.net/v1` | $1 + $25 (survey) | deepseek-ai/DeepSeek-R1, meta-llama/Llama-3.1-70B-Instruct | ✅ | ❓ Not Tested |
 | 4 | [**NLP Cloud**](https://nlpcloud.com) | `api.nlpcloud.io/v1` | 3 RPM ongoing, $15 credits | finetuned-llama-3-70b, chatdolphin | ❌ | ❓ Not Tested |
 | 5 | [**Coze (ByteDance)**](https://coze.com) | `api.coze.com/v1` | Free tier (bot-based) | Via bots: GPT-4o, Gemini, Claude | ✅ | ❓ Not Tested |
+| 6 | [**StepFun**](https://platform.stepfun.com) | `api.stepfun.com/v1` | Free on OpenRouter (Step 3.5 Flash) | step-3-flash, step-3-mini | ✅ | ❓ Not Tested |
+| 7 | [**LemonData**](https://lemondata.ai) | `api.lemondata.ai/v1` | $1 credits, 300+ models | gpt-4o, claude-3.5-sonnet | ✅ | ❓ Not Tested |
 
 <details>
-<summary><strong>Provider Notes (5)</strong></summary>
+<summary><strong>Provider Notes (7)</strong></summary>
 
 - **Fireworks AI**: Very fast. Supports function calling on open models.
 - **AIMLAPI**: Aggregator with 300+ models including GPT, Claude, open-source.
 - **Inference.net**: Decentralized inference. Complete survey for extra credits.
 - **NLP Cloud**: Also has NER, summarization, translation. Custom API format.
 - **Coze (ByteDance)**: Build bots that call underlying LLMs. ByteDance platform.
+- **StepFun**: Chinese AI lab. Step 3.5 Flash is a 196B MoE model, free via OpenRouter.
+- **LemonData**: Aggregator with 300+ models. $1 free credits on signup.
 
 </details>
 
@@ -217,9 +244,12 @@ print(response.choices[0].message.content)
 | 15 | [**SiliconCloud (SiliconFlow)**](https://siliconflow.com) | `api.siliconflow.cn/v1` | Small credits on signup | deepseek-ai/DeepSeek-V3, Qwen/Qwen2.5-72B-Instruct | ✅ | ❓ Not Tested |
 | 16 | [**Eden AI**](https://edenai.co) | `api.edenai.co/v2` | $10 credits | Multi-provider aggregator | ❌ | ❓ Not Tested |
 | 17 | [**Lepton AI**](https://lepton.ai) | `api.lepton.ai/v1` | Trial credits | llama-3.3-70b | ✅ | ❓ Not Tested |
+| 18 | [**Baseten**](https://baseten.co) | `model-{model_id}.api.baseten.co/v1` | $30 credits | llama-3.3-70b, deepseek-r1 | ✅ | ❓ Not Tested |
+| 19 | [**Modal**](https://modal.com) | `YOUR_APP.modal.run/v1` | $30/mo free compute | Any (self-deployed), vLLM templates | ✅ | ❓ Not Tested |
+| 20 | [**Anyscale Endpoints**](https://app.endpoints.anyscale.com) | `api.endpoints.anyscale.com/v1` | $10 credits | meta-llama/Llama-3.3-70B-Instruct, mistralai/Mixtral-8x22B-Instruct-v0.1 | ✅ | ❓ Not Tested |
 
 <details>
-<summary><strong>Provider Notes (17)</strong></summary>
+<summary><strong>Provider Notes (20)</strong></summary>
 
 - **xAI / Grok**: $150/mo free if you allow data sharing. 2M context window on Grok 3.
 - **DeepSeek**: Cheapest frontier model. $0.014/M for cache hits. V3 is 685B MoE.
@@ -238,6 +268,9 @@ print(response.choices[0].message.content)
 - **SiliconCloud (SiliconFlow)**: Chinese inference platform. Competitive pricing.
 - **Eden AI**: Aggregates OpenAI, Google, Anthropic, etc. under one API.
 - **Lepton AI**: Fast serverless inference.
+- **Baseten**: Deploy and serve any model. $30 free credits. OpenAI-compatible.
+- **Modal**: Serverless GPU platform. $30/mo free. Great for custom model serving with vLLM.
+- **Anyscale Endpoints**: Ray-based serving. Fast open-source model inference.
 
 </details>
 
@@ -475,6 +508,8 @@ Ready-to-run scripts in the `examples/` directory:
 | **vision** | Multimodal image analysis (Gemini, GitHub Models) | `python examples/vision.py --url "..."` |
 | **embeddings** | Free embeddings + similarity matrix | `python examples/embeddings.py` |
 | **research_demo** | Full research agent with web search | `python examples/research_demo.py "query"` |
+| **oneliners** | One-liner for every provider + quick list | `python examples/oneliners.py groq` |
+| **curl_examples** | cURL commands for 10 providers (no Python!) | `bash examples/curl_examples.sh groq` |
 
 All examples support `--provider` flag to switch between free providers (groq, gemini, cerebras, mistral, etc.).
 
@@ -569,10 +604,10 @@ All agents accept a provider name string with 8 built-in presets:
 | Preset | Provider | Model | Free Tier |
 |:-------|:---------|:------|:----------|
 | `groq` | Groq | llama-3.3-70b-versatile | ~1K RPD |
-| `gemini` | Google Gemini | gemini-2.0-flash | 250 RPD |
+| `gemini` | Google Gemini | gemini-2.0-flash | 500 RPD |
 | `cerebras` | Cerebras | llama-3.3-70b | 1M tokens/day |
 | `mistral` | Mistral | mistral-small-latest | 1B tokens/mo |
-| `openrouter` | OpenRouter | deepseek-r1:free | 50 RPD |
+| `openrouter` | OpenRouter | deepseek-r1:free | 200 RPD |
 | `github` | GitHub Models | gpt-4o | 50-150 RPD |
 | `sambanova` | SambaNova | Llama-3.3-70B | $5 credits |
 | `huggingface` | HuggingFace | Qwen2.5-72B | ~300 req/hr |
@@ -673,6 +708,50 @@ print(limiter.remaining("groq"))  # {"rpm": 29, "rpd": 999}
 print(limiter.summary())          # Full usage summary table
 ```
 
+### Token Counter
+
+Estimate token counts without external dependencies:
+
+```python
+from tools.token_counter import count_tokens, estimate_messages_tokens, tokens_to_cost
+
+# Quick estimate
+tokens = count_tokens("Hello, how are you doing today?")  # ~8
+
+# Estimate for chat messages
+messages = [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Explain quantum computing."},
+]
+total = estimate_messages_tokens(messages)  # ~18
+
+# Calculate cost
+cost = tokens_to_cost(input_tokens=1000, output_tokens=500,
+                       input_price_per_m=0.14, output_price_per_m=0.28)
+# $0.00028 (DeepSeek pricing)
+```
+
+### Cost Calculator
+
+Compare pricing across all providers:
+
+```python
+from tools.cost_calculator import CostCalculator, estimate_monthly_cost
+
+calc = CostCalculator()
+
+# Find cheapest provider
+cheapest = calc.cheapest_paid(input_tokens=1000, output_tokens=500)
+# {'provider': 'DeepSeek', 'model': 'deepseek-chat', 'cost': 0.00028, ...}
+
+# Full cost comparison table
+print(calc.summary(input_tokens=1000, output_tokens=500))
+
+# Estimate monthly spend
+monthly = estimate_monthly_cost("deepseek", requests_per_day=100)
+# {'monthly_cost': 0.84, 'monthly_requests': 3000, ...}
+```
+
 ### Conversation Manager
 
 Save, load, and export chat histories:
@@ -731,7 +810,7 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
               ▼                   ▼                   ▼
     ┌──────────────────┐ ┌──────────────┐  ┌──────────────────┐
     │  providers.py    │ │  scanner.py  │  │ discovery/engine  │
-    │  50+ providers   │ │  async HTTP  │  │  5 strategies     │
+    │  57+ providers   │ │  async HTTP  │  │  5 strategies     │
     │  7 tiers         │ │  health test │  │  AI-powered       │
     └────────┬─────────┘ └──────┬───────┘  └────────┬─────────┘
              │                  │                    │
@@ -785,13 +864,13 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 ├── main.py                  # CLI entry point (9 subcommands)
 ├── config.py                # Config loader (YAML + env overrides)
 ├── config.yaml              # All settings (scan, search, discovery, plugins)
-├── providers.py             # Provider registry (50 providers, 7 tiers)
+├── providers.py             # Provider registry (58 providers, 7 tiers)
 ├── scanner.py               # Async endpoint health checker (httpx)
 ├── report_generator.py      # README/report generator
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # API key template (50+ keys, all optional)
 │
-├── examples/                # Ready-to-run sample scripts (11 examples)
+├── examples/                # Ready-to-run sample scripts (13 examples)
 │   ├── basic_chat.py        # Simple single-turn chat
 │   ├── streaming_chat.py    # Streaming with perf stats
 │   ├── interactive_chat.py  # Multi-turn conversation
@@ -802,7 +881,9 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 │   ├── batch_async.py       # Parallel prompt processing
 │   ├── vision.py            # Multimodal image analysis
 │   ├── embeddings.py        # Free embeddings + similarity
-│   └── research_demo.py     # Full research agent demo
+│   ├── research_demo.py     # Full research agent demo
+│   ├── oneliners.py         # One-liner per provider
+│   └── curl_examples.sh     # cURL commands for 10 providers
 │
 ├── agents/                  # LLM-powered agent framework
 │   ├── base.py              # BaseAgent + 8 provider presets
@@ -854,7 +935,9 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 │   ├── compare.py           # Side-by-side comparison
 │   ├── proxy.py             # Local OpenAI-compatible proxy
 │   ├── rate_limiter.py      # Per-provider rate limiting + quota tracking
-│   └── conversation.py      # Chat history save/load/export
+│   ├── conversation.py      # Chat history save/load/export
+│   ├── token_counter.py     # Token estimation + cost math
+│   └── cost_calculator.py   # Cross-provider cost comparison
 │
 └── data/                    # Generated data (gitignored)
     └── .gitkeep
@@ -893,5 +976,5 @@ Found a new free LLM endpoint? Provider changed their limits? Something broken? 
 ---
 
 <p align="center">
-  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-06 14:43 UTC</sub>
+  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-06 15:52 UTC</sub>
 </p>
