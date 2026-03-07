@@ -1,0 +1,23 @@
+# Normalize line endings
+* text=auto
+
+# Explicit text files
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+
+# Mark generated files so they collapse in GitHub PRs
+README.md linguist-generated=true
+
+# Shell scripts need LF
+*.sh text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.gif binary

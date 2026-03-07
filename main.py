@@ -14,6 +14,8 @@ Usage:
     python main.py models                      # Fetch model catalogs
     python main.py export --format json        # Export to JSON/CSV/YAML/HTML
     python main.py compare "prompt"            # Compare providers side-by-side
+    python main.py costs                       # Compare pricing across providers
+    python main.py tokens "text"               # Estimate token count for text
     python main.py proxy                       # Start local proxy server
 """
 
@@ -378,6 +380,50 @@ async def cmd_compare(args: argparse.Namespace, config: Config) -> None:
         print(f"{r.provider_name:<20} {r.model:<30} {r.latency_ms:>7.0f}ms {r.char_count:>6} {status}")
 
 
+def cmd_costs(args: argparse.Namespace, config: Config) -> None:
+    """Show cost comparison across providers."""
+    from tools.cost_calculator import CostCalculator, estimate_monthly_cost
+
+    calc = CostCalculator()
+    print(calc.summary(
+        input_tokens=args.input_tokens,
+        output_tokens=args.output_tokens,
+        top_n=args.top,
+    ))
+
+    if args.provider:
+        monthly = estimate_monthly_cost(
+            args.provider,
+            requests_per_day=args.rpd,
+            avg_input=args.input_tokens,
+            avg_output=args.output_tokens,
+        )
+        if "error" in monthly:
+            print(f"\n{monthly['error']}")
+        else:
+            print(f"\nMonthly estimate for {monthly['provider']} ({monthly['model']}):")
+            print(f"  {monthly['monthly_requests']:,} requests/month")
+            print(f"  ${monthly['cost_per_request']:.6f}/request")
+            print(f"  ${monthly['monthly_cost']:.2f}/month")
+            print(f"  Free tier: {monthly['free_tier']}")
+
+
+def cmd_tokens(args: argparse.Namespace, config: Config) -> None:
+    """Estimate token count for text."""
+    from tools.token_counter import count_tokens, tokens_to_cost, format_tokens
+
+    text = args.text
+    tokens = count_tokens(text)
+    print(f"Text: {text[:80]}{'...' if len(text) > 80 else ''}")
+    print(f"Estimated tokens: {format_tokens(tokens)} ({tokens})")
+    print(f"Words: {len(text.split())}")
+    print(f"Characters: {len(text)}")
+
+    if args.price_in and args.price_out:
+        cost = tokens_to_cost(tokens, tokens, args.price_in, args.price_out)
+        print(f"Estimated cost (as both input+output): ${cost:.6f}")
+
+
 def cmd_proxy(args: argparse.Namespace, config: Config) -> None:
     """Start the local proxy server."""
     from tools.proxy import main as proxy_main
@@ -408,12 +454,16 @@ Commands:
   models      Fetch available model lists from providers
   export      Export data to JSON/CSV/YAML/HTML
   compare     Compare provider responses side-by-side
+  costs       Compare pricing across all providers
+  tokens      Estimate token count for text
   proxy       Start a local OpenAI-compatible proxy server
 
 Examples:
   python main.py scan --tier free --report
   python main.py discover --strategy llm_search
   python main.py compare "Explain recursion" --providers groq cerebras
+  python main.py costs --provider deepseek --rpd 100
+  python main.py tokens "Hello, how are you?"
   python main.py proxy --port 8000
   python main.py export --format csv
         """,
@@ -454,6 +504,20 @@ Examples:
     p_compare.add_argument("--providers", nargs="*", help="Provider names to compare")
     p_compare.add_argument("--max-tokens", type=int, default=300)
 
+    # costs
+    p_costs = subparsers.add_parser("costs", help="Compare pricing across providers")
+    p_costs.add_argument("--input-tokens", type=int, default=1000, help="Input tokens per request")
+    p_costs.add_argument("--output-tokens", type=int, default=500, help="Output tokens per request")
+    p_costs.add_argument("--top", type=int, default=15, help="Show top N providers")
+    p_costs.add_argument("--provider", type=str, help="Show monthly estimate for a provider")
+    p_costs.add_argument("--rpd", type=int, default=100, help="Requests per day (for monthly estimate)")
+
+    # tokens
+    p_tokens = subparsers.add_parser("tokens", help="Estimate token count for text")
+    p_tokens.add_argument("text", help="Text to estimate tokens for")
+    p_tokens.add_argument("--price-in", type=float, help="Input price per million tokens")
+    p_tokens.add_argument("--price-out", type=float, help="Output price per million tokens")
+
     # proxy
     p_proxy = subparsers.add_parser("proxy", help="Start local OpenAI-compatible proxy")
     p_proxy.add_argument("--port", type=int, default=8000)
@@ -476,6 +540,10 @@ Examples:
         asyncio.run(cmd_export(args, config))
     elif args.command == "compare":
         asyncio.run(cmd_compare(args, config))
+    elif args.command == "costs":
+        cmd_costs(args, config)
+    elif args.command == "tokens":
+        cmd_tokens(args, config)
     elif args.command == "proxy":
         cmd_proxy(args, config)
     else:

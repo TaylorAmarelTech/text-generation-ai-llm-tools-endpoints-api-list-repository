@@ -464,6 +464,9 @@ python main.py scan     # Test all endpoints
 | `python main.py models` | Fetch model catalogs from all providers |
 | `python main.py export --format csv` | Export to JSON, CSV, YAML, or HTML |
 | `python main.py compare "prompt"` | Compare providers side-by-side |
+| `python main.py costs` | Compare pricing across all providers |
+| `python main.py costs --provider deepseek --rpd 100` | Estimate monthly cost for a provider |
+| `python main.py tokens "your text"` | Estimate token count for text |
 | `python main.py proxy --port 8000` | Start a local OpenAI-compatible proxy |
 
 ### AI-Powered Discovery
@@ -848,7 +851,7 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
                                    │
                           ┌────────▼────────┐
                           │    main.py      │  CLI entry point
-                          │   (argparse)    │  9 subcommands
+                          │   (argparse)    │  11 subcommands
                           └──┬────┬────┬────┘
                              │    │    │
               ┌──────────────┘    │    └──────────────┐
@@ -874,7 +877,7 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
     ┌──────────────────────────────────────────────────────┐
     │              plugins/ + tools/                       │
     │  benchmark | export | cascade | proxy | compare      │
-    │  pricing | notify | model_list                       │
+    │  pricing | notify | cost_calculator | token_counter  │
     └──────────────────────────────────────────────────────┘
 
     ┌──────────────────────────────────────────────────────┐
@@ -914,7 +917,7 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
 
 ```
 {REPO_NAME}/
-├── main.py                  # CLI entry point (9 subcommands)
+├── main.py                  # CLI entry point (11 subcommands)
 ├── config.py                # Config loader (YAML + env overrides)
 ├── config.yaml              # All settings (scan, search, discovery, plugins)
 ├── providers.py             # Provider registry ({total} providers, 7 tiers)
@@ -922,6 +925,15 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
 ├── report_generator.py      # README/report generator
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # API key template (50+ keys, all optional)
+├── CONTRIBUTING.md          # How to contribute
+├── .gitattributes           # Line ending normalization
+│
+├── .github/                 # GitHub templates
+│   ├── pull_request_template.md
+│   └── ISSUE_TEMPLATE/
+│       ├── new-provider.md
+│       ├── provider-update.md
+│       └── bug-report.md
 │
 ├── examples/                # Ready-to-run sample scripts (13 examples)
 │   ├── basic_chat.py        # Simple single-turn chat
@@ -1006,23 +1018,15 @@ See [`recipes/README.md`](recipes/README.md) for full walkthroughs with code exa
 
 Found a new free LLM endpoint? Provider changed their limits? Something broken? **Contributions welcome!**
 
-### Adding a Provider
+See **[CONTRIBUTING.md](CONTRIBUTING.md)** for full guidelines. Quick version:
 
 1. Edit `providers.py` -- add a new `Provider(...)` entry in the appropriate tier
 2. Run `python main.py scan --provider YourProvider` to verify it works
-3. Run `python main.py scan --report` to regenerate the README
+3. Run `python main.py report` to regenerate the README
 4. Submit a PR
 
-### Extending
-
-- **Custom plugins** -- subclass `BasePlugin` in `plugins/custom/your_plugin.py`
-- **Custom discovery strategies** -- subclass `BaseStrategy` in `discovery/strategies/your_strategy.py`
-- **New export formats** -- extend `plugins/builtin/export.py`
-
-### Reporting Issues
-
 - Provider down or limits changed? [Open an issue]({REPO_URL}/issues)
-- New provider suggestion? [Open an issue]({REPO_URL}/issues) with the endpoint URL and free tier details
+- New provider suggestion? Use the [New Provider template]({REPO_URL}/issues/new?template=new-provider.md)
 
 ---
 

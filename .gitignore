@@ -1,16 +1,39 @@
+# Environment & secrets
 .env
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
 .venv/
 venv/
+
+# Generated data (reproducible via `python main.py scan/export`)
 scan_results.json
 data/*.json
 data/*.csv
 data/*.yaml
 data/*.html
 !data/.gitkeep
+
+# Logs
+*.log
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Linting / type checking
 .mypy_cache/
 .ruff_cache/
-dist/
-*.egg-info/
-debug.log
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db

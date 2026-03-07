@@ -46,7 +46,7 @@ class SearchConfig:
     google_cse_id: str = ""
     max_results_per_query: int = 10
     search_queries: list[str] = field(default_factory=lambda: [
-        "free LLM API endpoint 2025 2026",
+        "free LLM API endpoint 2026",
         "free text generation API no credit card",
         "OpenAI compatible free API endpoint",
         "free inference API LLM open source",

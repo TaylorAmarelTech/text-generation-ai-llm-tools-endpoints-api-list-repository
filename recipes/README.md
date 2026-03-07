@@ -260,25 +260,36 @@ See `examples/batch_async.py` for a complete example with error handling and sta
 Minimize costs by routing to the cheapest provider that fits:
 
 ```python
+from tools.cost_calculator import CostCalculator
 from tools.rate_limiter import RateLimiter
 
+calc = CostCalculator()
 limiter = RateLimiter()
 
-# Define your provider priority (cheapest/fastest first)
-PROVIDERS = ["groq", "cerebras", "mistral", "gemini", "openrouter"]
+# Find the cheapest provider for your workload
+print(calc.summary(input_tokens=1000, output_tokens=500))
+
+# Estimate monthly spend before committing
+from tools.cost_calculator import estimate_monthly_cost
+monthly = estimate_monthly_cost("deepseek", requests_per_day=100)
+print(f"Estimated monthly cost: ${monthly['monthly_cost']:.2f}")
+
+# Smart routing: try free providers first, fall back to cheapest paid
+FREE_PROVIDERS = ["groq", "cerebras", "mistral", "gemini", "openrouter"]
 
 def smart_route(prompt):
-    for provider in PROVIDERS:
+    for provider in FREE_PROVIDERS:
         if limiter.can_request(provider):
             # Make request...
             limiter.record_request(provider, tokens=100)
             return response
-    # All rate limited -- wait for the fastest reset
-    wait_times = {p: limiter.wait_time(p) for p in PROVIDERS}
-    best = min(wait_times, key=wait_times.get)
-    time.sleep(wait_times[best])
-    return smart_route(prompt)  # Retry
+    # All free providers rate limited -- use cheapest paid
+    fallback = calc.cheapest_paid(input_tokens=500, output_tokens=200)
+    print(f"Falling back to {fallback['provider']} (${fallback['cost']:.6f}/req)")
+    # Make request to fallback...
 ```
+
+**Tip:** Use `python main.py costs` to see a full pricing comparison table from the CLI.
 
 ---
 
