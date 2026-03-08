@@ -3,6 +3,7 @@
 <p align="center">
   <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/version-0.4.0-orange.svg" alt="Version: 0.4.0">
   <img src="https://img.shields.io/badge/providers-58-brightgreen.svg" alt="Providers: 58">
   <img src="https://img.shields.io/badge/free%20tier-18-success.svg" alt="Free: 18">
   <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository/stargazers"><img src="https://img.shields.io/github/stars/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository?style=social" alt="GitHub Stars"></a>
@@ -10,7 +11,7 @@
 
 <p align="center">
   <strong>The most comprehensive, actively-maintained directory of free and affordable LLM API endpoints.</strong><br>
-  58 providers cataloged &bull; 18 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-07 02:38 UTC
+  58 providers cataloged &bull; 18 truly free (no credit card) &bull; All OpenAI SDK compatible &bull; Updated: 2026-03-08 00:03 UTC
 </p>
 
 ---
@@ -25,6 +26,29 @@ There are **dozens** of LLM API providers offering free tiers, trial credits, an
 - **Production-ready code** (cascade client, local proxy, benchmarks) you can drop into your projects
 
 Whether you're a hobbyist building a chatbot, a startup watching costs, or a researcher who needs diverse model access -- this saves you hours of research.
+
+---
+
+<details>
+<summary><strong>Table of Contents</strong></summary>
+
+- [Highlights](#highlights)
+- [Quick Start](#quick-start)
+- [Provider Directory](#provider-directory) (7 tiers)
+- [Cascade / Fallback Example](#cascade--fallback-example)
+- [Toolkit](#toolkit) (setup, CLI, discovery, plugins, proxy)
+- [Examples](#examples) (13 ready-to-run scripts)
+- [Agents & Adapters](#agent-framework)
+- [Utility Tools](#utility-tools) (rate limiter, token counter, cost calculator, conversation manager)
+- [Recipes & Use Cases](#recipes--use-cases)
+- [Architecture](#architecture)
+- [FAQ & Troubleshooting](#faq--troubleshooting)
+- [Keeping Up to Date](#keeping-up-to-date)
+- [Contributing](#contributing)
+- [Credits & Acknowledgments](#credits--acknowledgments)
+- [License](#license)
+
+</details>
 
 ---
 
@@ -45,32 +69,6 @@ Whether you're a hobbyist building a chatbot, a startup watching costs, or a res
 | **Local Proxy Server** | Route any OpenAI-compatible app through free providers at `localhost:8000/v1` |
 | **Plugin Architecture** | Benchmarks, model catalogs, pricing, export (JSON/CSV/YAML/HTML), notifications |
 | **Fully Configurable** | YAML config + env vars. Set your keys, pick your strategies, run |
-
----
-
-## Table of Contents
-
-- [Quick Start](#quick-start)
-- [Provider Overview](#provider-overview)
-- [Tier 1: Truly Free](#tier-1-truly-free-no-credit-card-ongoing)
-- [Tier 2: Generous Free Tier](#tier-2-generous-free-tier-notable-limitations)
-- [Tier 3: Free Credits on Signup](#tier-3-free-credits-on-signup-one-time-may-expire)
-- [Tier 4: Freemium](#tier-4-freemium-credit-card-required)
-- [Tier 5: Pay-per-use](#tier-5-pay-per-use-no-free-tier-very-cheap)
-- [Routers / Aggregators](#routers--aggregators)
-- [Local / Self-hosted](#local--self-hosted-unlimited-free-forever)
-- [Cascade / Fallback Example](#cascade--fallback-example)
-- [Toolkit](#toolkit)
-- [Examples](#examples)
-- [Agent Framework](#agent-framework)
-- [Search Tools](#search-tools)
-- [API Adapters](#api-adapters)
-- [Utility Tools](#utility-tools)
-- [Recipes & Use Cases](#recipes--use-cases)
-- [Architecture](#architecture)
-- [Status Legend](#status-legend)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
 
 ---
 
@@ -873,6 +871,10 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 ├── requirements.txt         # Python dependencies
 ├── .env.example             # API key template (50+ keys, all optional)
 ├── CONTRIBUTING.md          # How to contribute
+├── CHANGELOG.md             # Version history and release notes
+├── SECURITY.md              # Security policy
+├── CODE_OF_CONDUCT.md       # Community guidelines
+├── __version__.py           # Version number (0.4.0)
 ├── .gitattributes           # Line ending normalization
 │
 ├── .github/                 # GitHub templates
@@ -957,6 +959,76 @@ text-generation-ai-llm-tools-endpoints-api-list-repository/
 
 ---
 
+## FAQ & Troubleshooting
+
+<details>
+<summary><strong>I'm getting "rate limited" -- what do I do?</strong></summary>
+
+Free tiers have daily/minute limits. Options:
+1. Switch to another free provider (use `CascadeClient` for automatic failover)
+2. Wait for the rate limit to reset (usually 1 minute for RPM, midnight UTC for RPD)
+3. Run `python main.py costs` to find affordable paid alternatives
+</details>
+
+<details>
+<summary><strong>Which provider should I start with?</strong></summary>
+
+**Groq** for speed, **Gemini** for generous limits (500 RPD), **Mistral** for highest volume (1B tokens/mo). See the Quick Start for all options.
+</details>
+
+<details>
+<summary><strong>"OpenAI SDK" -- do I need an OpenAI key?</strong></summary>
+
+No. The OpenAI Python SDK is just the client library. You point it at any compatible endpoint by setting `base_url`. No OpenAI account needed.
+</details>
+
+<details>
+<summary><strong>How do I use this without Python?</strong></summary>
+
+Use `examples/curl_examples.sh` -- it has cURL commands for 10 providers that work from any terminal. The API format is standard REST/JSON.
+</details>
+
+<details>
+<summary><strong>The scanner says "AUTH FAIL" for a provider I have a key for</strong></summary>
+
+1. Check that the key is correctly set in `.env` (no quotes, no trailing spaces)
+2. Some providers require account verification or have region restrictions
+3. Try the key manually: `python examples/oneliners.py <provider>`
+</details>
+
+<details>
+<summary><strong>Can I use this in production?</strong></summary>
+
+The code is MIT-licensed, so yes. For production, use `CascadeClient` for failover, `RateLimiter` for quota management, and consider paid tiers for guaranteed uptime. Free tiers can change without notice.
+</details>
+
+---
+
+## Keeping Up to Date
+
+Free tier limits and provider availability change frequently. Here's how to stay current:
+
+```bash
+# Pull the latest provider data
+git pull origin main
+
+# Re-scan all endpoints to check current status
+python main.py scan --report
+
+# Discover new providers that may have launched
+python main.py discover
+```
+
+**Automated updates:**
+- Star and watch this repo to get notified of new providers
+- The provider registry in `providers.py` is updated regularly
+- Run `python main.py scan` periodically to verify endpoint health
+- Check the [CHANGELOG.md](CHANGELOG.md) for version history
+
+**Current version:** 0.4.0 ([full changelog](CHANGELOG.md))
+
+---
+
 ## Contributing
 
 Found a new free LLM endpoint? Provider changed their limits? Something broken? **Contributions welcome!**
@@ -973,6 +1045,22 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for full guidelines. Quick version:
 
 ---
 
+## Credits & Acknowledgments
+
+**Built by** [TaylorAmarelTech](https://github.com/TaylorAmarelTech)
+
+**Key dependencies:**
+- [OpenAI Python SDK](https://github.com/openai/openai-python) -- universal LLM client
+- [httpx](https://github.com/encode/httpx) -- async HTTP for scanning
+- [Rich](https://github.com/Textualize/rich) -- terminal formatting
+- [python-dotenv](https://github.com/theskumar/python-dotenv) -- environment management
+
+**Providers:** This project is made possible by the generous free tiers offered by Groq, Google, Cerebras, Mistral, OpenRouter, HuggingFace, Cloudflare, GitHub Models, and all the other providers listed in this directory. We are not affiliated with any of these providers.
+
+**Community:** Contributions, provider suggestions, and bug reports from the community keep this directory accurate and up to date. See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved.
+
+---
+
 ## License
 
 [MIT](https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository/blob/main/LICENSE) -- use this however you want.
@@ -980,5 +1068,5 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for full guidelines. Quick version:
 ---
 
 <p align="center">
-  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> &bull; Last updated: 2026-03-07 02:38 UTC</sub>
+  <sub>Auto-generated by <a href="https://github.com/TaylorAmarelTech/text-generation-ai-llm-tools-endpoints-api-list-repository">LLM Endpoint Scanner</a> v0.4.0 &bull; Last updated: 2026-03-08 00:03 UTC</sub>
 </p>

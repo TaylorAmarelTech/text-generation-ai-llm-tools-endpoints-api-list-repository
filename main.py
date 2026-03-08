@@ -43,6 +43,7 @@ try:
 except ImportError:
     HAS_RICH = False
 
+from __version__ import __version__
 from config import load_config, Config
 from providers import Provider, Tier, PROVIDERS, get_unique_providers, get_providers_by_tier
 from scanner import ScanResult, scan_all, scan_provider
@@ -442,9 +443,11 @@ def main() -> None:
     config = load_config()
 
     parser = argparse.ArgumentParser(
-        description="LLM Endpoint Scanner, Discovery Engine & Toolkit",
+        description=f"LLM Endpoint Scanner, Discovery Engine & Toolkit v{__version__}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        epilog=f"""
+Version: {__version__}
+
 Commands:
   scan        Test all endpoints for availability
   report      Generate README.md from last scan results
@@ -468,6 +471,7 @@ Examples:
   python main.py export --format csv
         """,
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # scan
